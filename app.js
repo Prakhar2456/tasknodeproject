@@ -2,6 +2,22 @@ const express = require('express');
 const app = express();
 const PORT = 3000;
 
+// Middleware: Request logger for development
+app.use((req, res, next) => {
+    console.log(`[DEV] ${req.method} ${req.url} - ${new Date().toISOString()}`);
+    next();
+});
+
+// Health check endpoint for development
+app.get('/api/health', (req, res) => {
+    res.json({
+        status: 'UP',
+        environment: 'development',
+        branch: 'dev',
+        timestamp: new Date().toISOString()
+    });
+});
+
 app.get('/api/combine-data', async (req, res) => {
     try {
         // 1. Define the 3 APIs you want to call
@@ -23,6 +39,8 @@ app.get('/api/combine-data', async (req, res) => {
 
         // 4. Send the combined result back to the client
         res.json({
+            environment: 'development',
+            branch: 'dev',
             user: data1,
             post: data2,
             todo: data3
