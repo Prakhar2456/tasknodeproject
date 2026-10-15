@@ -2,6 +2,33 @@ const express = require('express');
 const app = express();
 const PORT = 3000;
 
+// Middleware: Mark test environment headers
+app.use((req, res, next) => {
+    res.setHeader('X-Environment', 'testing');
+    next();
+});
+
+// Test suite health endpoint
+app.get('/api/health', (req, res) => {
+    res.json({
+        status: 'UP',
+        environment: 'testing',
+        branch: 'testing',
+        testsPassing: true,
+        timestamp: new Date().toISOString()
+    });
+});
+
+// Mock endpoint for automated Selenium / API integration tests
+app.get('/api/mock-data', (req, res) => {
+    res.json({
+        mock: true,
+        user: { id: 999, name: 'Test User', email: 'test@example.com' },
+        post: { id: 999, title: 'Sample Test Post' },
+        todo: { id: 999, title: 'Test Todo Item', completed: true }
+    });
+});
+
 app.get('/api/combine-data', async (req, res) => {
     try {
         // 1. Define the 3 APIs you want to call
@@ -23,6 +50,8 @@ app.get('/api/combine-data', async (req, res) => {
 
         // 4. Send the combined result back to the client
         res.json({
+            environment: 'testing',
+            branch: 'testing',
             user: data1,
             post: data2,
             todo: data3
