@@ -2,6 +2,28 @@ const express = require('express');
 const app = express();
 const PORT = 3000;
 
+// Middleware: Add staging headers & track response time
+app.use((req, res, next) => {
+    const startTime = Date.now();
+    res.setHeader('X-Environment', 'staging');
+    res.on('finish', () => {
+        const duration = Date.now() - startTime;
+        console.log(`[STAGING] ${req.method} ${req.url} completed in ${duration}ms`);
+    });
+    next();
+});
+
+// Health check endpoint for staging
+app.get('/api/health', (req, res) => {
+    res.json({
+        status: 'UP',
+        environment: 'staging',
+        branch: 'staging',
+        uptime: process.uptime(),
+        timestamp: new Date().toISOString()
+    });
+});
+
 app.get('/api/combine-data', async (req, res) => {
     try {
         // 1. Define the 3 APIs you want to call
@@ -23,6 +45,8 @@ app.get('/api/combine-data', async (req, res) => {
 
         // 4. Send the combined result back to the client
         res.json({
+            environment: 'staging',
+            branch: 'staging',
             user: data1,
             post: data2,
             todo: data3
